@@ -1,5 +1,6 @@
 import 'package:chat/screens/auth_screen.dart';
-import 'package:chat/screens/chat_screen.dart';
+import 'package:chat/screens/group_chat.dart';
+import 'package:chat/screens/tabs_screen.dart';
 import 'package:chat/widgets/auth/auth_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +16,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Chat',
@@ -35,8 +38,9 @@ class MyApp extends StatelessWidget {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (ctx, userSnapshot) {
             if (userSnapshot.hasData) {
-              return ChatScreen();
+              return TabsScrren();
             }
+
             return AuthScreen();
           },
         )

@@ -15,9 +15,27 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('An Error Occurred!'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+
   final _auth = FirebaseAuth.instance;
   var _isLoading = false;
-  void _submitFn(
+  Future<void> _submitFn(
     String email,
     String password,
     String username,
@@ -50,11 +68,30 @@ class _AuthScreenState extends State<AuthScreen> {
               .set({
             'username': username,
             'email': email,
+            'uid': authResult.user!.uid,
+            'status': 'Unavailable',
             'image_url': url,
           });
         });
       }
-    } on PlatformException catch (err) {
+    } on FirebaseAuthException catch (error) {
+      var errorMessage = 'Authentication failed!';
+      if (error.code == 'wrong-password') {
+        errorMessage = 'Invalid password.';
+      } else if (error.code == 'email-already-exists') {
+        errorMessage = 'This email address is already in use.';
+      } else if (error.code == 'invalid-email') {
+        errorMessage = 'This is not a valid email address.';
+      } else if (error.code == 'user-not-found') {
+        errorMessage = 'Could not find a user with that email.';
+      }
+      _showErrorDialog(errorMessage);
+      setState(() {
+        _isLoading = false;
+      });
+    }
+
+    /*on PlatformException catch (err) {
       var message = 'An error occurred, pelase check your credentials!';
 
       if (err.message != null) {
@@ -69,7 +106,13 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _isLoading = false;
       });
-    } catch (err) {
+    }*/
+    catch (err) {
+      const errorMessage =
+          'Could not authenticate you. Please try again later!';
+
+      _showErrorDialog(errorMessage);
+
       setState(() {
         _isLoading = false;
       });
